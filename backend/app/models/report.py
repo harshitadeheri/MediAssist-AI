@@ -50,3 +50,10 @@ class Report(Base):
         "User",
         back_populates="reports",
     )
+
+    cbc_analysis = relationship(
+        "CBCAnalysis",
+        back_populates="report",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
