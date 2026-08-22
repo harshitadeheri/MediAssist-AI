@@ -35,7 +35,9 @@ interface Summary {
 }
 
 interface CBCResult {
+  report_id?: number;
   file_name: string;
+  status?: string;
   analysis: CBCAnalysis;
   summary?: Summary;
 }
@@ -113,7 +115,7 @@ export default function Home() {
     try {
       /*
        * STEP 1:
-       * Upload the PDF to /reports/upload
+       * Upload the PDF and save it as a report.
        */
 
       const formData = new FormData();
@@ -140,7 +142,7 @@ export default function Home() {
 
       /*
        * STEP 2:
-       * Analyze the CBC report
+       * Analyze the CBC report.
        */
 
       const analyzeFormData = new FormData();
@@ -161,23 +163,23 @@ export default function Home() {
         const errorData = await analyzeResponse.json();
 
         throw new Error(
-          errorData.detail || "Failed to analyze CBC report."
+          errorData.detail ||
+            "Failed to analyze CBC report."
         );
       }
 
       const result = await analyzeResponse.json();
 
-      /*
-       * The backend returns the CBC analysis.
-       */
-
       setCbcResult(result);
 
       /*
-       * Refresh reports after successful upload.
+       * Refresh report list.
        */
 
       await loadReports();
+
+      setSelectedFile(null);
+
     } catch (err) {
       console.error(err);
 
@@ -215,6 +217,7 @@ export default function Home() {
 
       setReports(data);
       setShowReports(true);
+
     } catch (err) {
       console.error(err);
 
@@ -268,47 +271,457 @@ export default function Home() {
 
   if (!token) {
     return (
-      <main className="loading-page">
-        <p>Loading...</p>
+      <main className="page">
+        <div className="loading-container">
+          <h2>Loading MediAssist AI...</h2>
+        </div>
       </main>
     );
   }
 
   return (
-    <>
-      <style jsx global>{`
-        * {
-          box-sizing: border-box;
-        }
+    <main className="page">
 
-        body {
-          margin: 0;
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-          background: #f7f9fc;
-          color: #111827;
-        }
+      {/* ================= HEADER ================= */}
 
-        button {
-          font-family: inherit;
-        }
+      <header className="header">
+
+        <div className="brand">
+          <div className="brand-icon">
+            🩺
+          </div>
+
+          <div>
+            <h1>MediAssist AI</h1>
+
+            <p>
+              Intelligent Healthcare Assistant
+            </p>
+          </div>
+        </div>
+
+        <button
+          className="logout-button"
+          onClick={logout}
+        >
+          Logout
+        </button>
+
+      </header>
+
+
+      {/* ================= MAIN CONTENT ================= */}
+
+      <div className="container">
+
+        {/* ================= WELCOME ================= */}
+
+        <section className="welcome-section">
+
+          <h2>
+            Welcome to MediAssist AI
+          </h2>
+
+          <p>
+            Upload your medical report and let AI
+            help you understand your health information.
+          </p>
+
+        </section>
+
+
+        {/* ================= ERROR ================= */}
+
+        {error && (
+          <div className="error-box">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+
+        {/* ================= UPLOAD CARD ================= */}
+
+        <section className="upload-card">
+
+          <div className="upload-icon">
+            📄
+          </div>
+
+          <h2>
+            Upload Medical Report
+          </h2>
+
+          <p>
+            Upload your CBC blood report in PDF format.
+          </p>
+
+          <label className="file-label">
+
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+            />
+
+            Choose PDF Report
+
+          </label>
+
+          {selectedFile && (
+            <div className="selected-file">
+
+              <span>
+                📎 {selectedFile.name}
+              </span>
+
+            </div>
+          )}
+
+          <button
+            className="primary-button"
+            onClick={uploadReport}
+            disabled={loading || !selectedFile}
+          >
+
+            {loading
+              ? "Analyzing Report..."
+              : "Upload & Analyze"}
+
+          </button>
+
+        </section>
+
+
+        {/* ================= RESULT ================= */}
+
+        {cbcResult && (
+          <section className="result-section">
+
+            <div className="result-header">
+
+              <div>
+                <h2>
+                  CBC Analysis Result
+                </h2>
+
+                <p>
+                  {cbcResult.file_name}
+                </p>
+              </div>
+
+              <div className="analysis-badge">
+                ✓ Analyzed
+              </div>
+
+            </div>
+
+
+            {/* SUMMARY */}
+
+            {cbcResult.summary && (
+              <div className="summary-card">
+
+                <h3>
+                  Overall Summary
+                </h3>
+
+                <div className="summary-status">
+
+                  <span>
+                    Overall Status:
+                  </span>
+
+                  <strong>
+                    {cbcResult.summary.overall_status}
+                  </strong>
+
+                </div>
+
+                <p>
+                  {cbcResult.summary.summary}
+                </p>
+
+
+                <div className="summary-stats">
+
+                  <div>
+                    <strong>
+                      {cbcResult.summary.total_parameters}
+                    </strong>
+
+                    <span>
+                      Total
+                    </span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {cbcResult.summary.normal_count}
+                    </strong>
+
+                    <span>
+                      Normal
+                    </span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {cbcResult.summary.high_count}
+                    </strong>
+
+                    <span>
+                      High
+                    </span>
+                  </div>
+
+                  <div>
+                    <strong>
+                      {cbcResult.summary.low_count}
+                    </strong>
+
+                    <span>
+                      Low
+                    </span>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+
+            {/* CBC PARAMETERS */}
+
+            <div className="parameters-card">
+
+              <h3>
+                CBC Parameters
+              </h3>
+
+              <div className="parameters-grid">
+
+                {Object.entries(
+                  cbcResult.analysis
+                ).map(([key, parameter]) => (
+
+                  <div
+                    className="parameter-card"
+                    key={key}
+                  >
+
+                    <div className="parameter-name">
+                      {parameterName(key)}
+                    </div>
+
+                    <div className="parameter-value">
+
+                      {parameter.value}
+
+                      {parameter.unit && (
+                        <span>
+                          {" "}
+                          {parameter.unit}
+                        </span>
+                      )}
+
+                    </div>
+
+                    <div className="parameter-reference">
+                      Reference: {parameter.reference}
+                    </div>
+
+                    <div
+                      className={getStatusClass(
+                        parameter.status
+                      )}
+                    >
+                      {parameter.status}
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+
+          </section>
+        )}
+
+
+        {/* ================= FEATURE CARDS ================= */}
+
+        <section className="cards-section">
+
+          {/* REPORTS */}
+
+          <div className="card">
+
+            <div className="card-icon reports-icon">
+              📋
+            </div>
+
+            <h2 className="card-title">
+              My Reports
+            </h2>
+
+            <p className="card-description">
+              View your previously uploaded medical
+              reports and their analysis status.
+            </p>
+
+            <button
+              className="secondary-button"
+              onClick={loadReports}
+            >
+              View Reports
+            </button>
+
+          </div>
+
+
+          {/* AI ASSISTANT */}
+
+          <div className="card">
+
+            <div className="card-icon bot-icon">
+              🤖
+            </div>
+
+            <h2 className="card-title">
+              AI Health Assistant
+            </h2>
+
+            <p className="card-description">
+              Ask questions about your medical reports
+              and receive easy-to-understand explanations.
+            </p>
+
+            <button
+              className="assistant-button"
+              onClick={openAssistant}
+            >
+              Open Assistant
+            </button>
+
+          </div>
+
+        </section>
+
+
+        {/* ================= REPORTS ================= */}
+
+        {showReports && (
+          <section className="reports-section">
+
+            <div className="reports-header">
+
+              <h2 className="reports-title">
+                My Reports
+              </h2>
+
+              <button
+                className="close-reports"
+                onClick={() => setShowReports(false)}
+              >
+                ✕
+              </button>
+
+            </div>
+
+            {reports.length === 0 ? (
+
+              <p>
+                No reports uploaded yet.
+              </p>
+
+            ) : (
+
+              <div className="reports-list">
+
+                {reports.map((report) => (
+
+                  <div
+                    className="report-item"
+                    key={report.id}
+                  >
+
+                    <div>
+
+                      <div className="report-name">
+                        📄 {report.file_name}
+                      </div>
+
+                      <div className="report-date">
+
+                        {report.uploaded_at
+                          ? new Date(
+                              report.uploaded_at
+                            ).toLocaleString()
+                          : "Date unavailable"}
+
+                      </div>
+
+                    </div>
+
+                    <div
+                      className={`report-status ${
+                        report.status === "Analyzed"
+                          ? "analyzed"
+                          : ""
+                      }`}
+                    >
+                      {report.status}
+                    </div>
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            )}
+
+          </section>
+        )}
+
+      </div>
+
+
+      {/* ================= FOOTER ================= */}
+
+      <footer className="footer">
+
+        <p>
+          MediAssist AI • AI-powered healthcare assistance
+        </p>
+
+        <p>
+          For informational purposes only. Always consult
+          a qualified healthcare professional for medical advice.
+        </p>
+
+      </footer>
+
+
+      {/* ================= STYLES ================= */}
+
+      <style jsx>{`
 
         .page {
           min-height: 100vh;
+          background: #f5f8fc;
+          color: #1f2937;
         }
 
-        /* ================= HEADER ================= */
-
         .header {
-          height: 88px;
           background: white;
-          border-bottom: 1px solid #d7deea;
+          border-bottom: 1px solid #e5e7eb;
+          padding: 20px 6%;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 30px;
         }
 
         .brand {
@@ -320,488 +733,439 @@ export default function Home() {
         .brand-icon {
           width: 48px;
           height: 48px;
-          border-radius: 10px;
-          background: #2161f5;
-          color: white;
+          border-radius: 14px;
+          background: #e8f1ff;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 30px;
-          font-weight: bold;
+          font-size: 25px;
         }
 
-        .brand-title {
-          font-size: 23px;
-          font-weight: 700;
-          color: #174ed4;
+        .brand h1 {
+          margin: 0;
+          font-size: 24px;
+          color: #174ea6;
         }
 
-        .brand-subtitle {
-          font-size: 14px;
-          color: #70809b;
-          margin-top: 3px;
+        .brand p {
+          margin: 3px 0 0;
+          color: #6b7280;
+          font-size: 13px;
         }
 
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: 15px;
+        .logout-button {
+          border: none;
+          background: #fee2e2;
+          color: #b91c1c;
+          padding: 10px 18px;
+          border-radius: 9px;
+          cursor: pointer;
+          font-weight: 600;
         }
 
-        .welcome {
-          color: #526581;
+        .logout-button:hover {
+          background: #fecaca;
+        }
+
+        .container {
+          width: min(1100px, 92%);
+          margin: 0 auto;
+          padding: 40px 0 60px;
+        }
+
+        .welcome-section {
+          text-align: center;
+          margin-bottom: 32px;
+        }
+
+        .welcome-section h2 {
+          font-size: 32px;
+          margin-bottom: 10px;
+          color: #111827;
+        }
+
+        .welcome-section p {
+          color: #6b7280;
           font-size: 16px;
         }
 
-        .avatar {
-          width: 45px;
-          height: 45px;
-          border-radius: 50%;
-          background: #e2edff;
-          color: #1e5bea;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 20px;
+        .error-box {
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #fecaca;
+          padding: 14px 18px;
+          border-radius: 10px;
+          margin-bottom: 20px;
         }
 
-        .logout {
-          border: none;
-          background: transparent;
-          color: #e53935;
-          cursor: pointer;
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        /* ================= MAIN ================= */
-
-        .container {
-          padding: 45px 30px 35px;
-          max-width: 1600px;
-          margin: auto;
-        }
-
-        .page-title {
-          font-size: 36px;
-          margin: 0;
-          color: #111b31;
-        }
-
-        .page-subtitle {
-          font-size: 20px;
-          color: #536782;
-          margin-top: 12px;
-          margin-bottom: 42px;
-        }
-
-        /* ================= DASHBOARD CARDS ================= */
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(3, 1fr);
-          gap: 30px;
-        }
-
-        .card {
+        .upload-card {
           background: white;
-          border: 1.5px solid #1c293d;
-          border-radius: 20px;
-          padding: 30px;
-          min-height: 500px;
-          box-shadow:
-            0 2px 5px rgba(0, 0, 0, 0.03);
+          border-radius: 18px;
+          padding: 42px;
+          text-align: center;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+          margin-bottom: 35px;
         }
 
-        .card-icon {
-          width: 60px;
-          height: 60px;
-          border-radius: 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 30px;
+        .upload-icon {
+          font-size: 45px;
+          margin-bottom: 12px;
+        }
+
+        .upload-card h2 {
+          margin: 8px 0;
+          font-size: 24px;
+        }
+
+        .upload-card p {
+          color: #6b7280;
           margin-bottom: 25px;
         }
 
-        .blood-icon {
-          background: #dbeafe;
-        }
-
-        .reports-icon {
-          background: #dcfce7;
-        }
-
-        .bot-icon {
-          background: #f0e3ff;
-        }
-
-        .card-title {
-          font-size: 24px;
-          margin: 0 0 14px;
-          color: #111a30;
-        }
-
-        .card-description {
-          color: #526681;
-          font-size: 18px;
-          line-height: 1.5;
-          margin-bottom: 28px;
-        }
-
-        /* ================= FILE UPLOAD ================= */
-
         .file-label {
-          display: block;
+          display: inline-block;
+          background: #edf4ff;
+          color: #1757b8;
+          border: 1px dashed #5791e8;
+          padding: 14px 24px;
+          border-radius: 10px;
           cursor: pointer;
+          font-weight: 600;
         }
 
-        .file-input {
+        .file-label input {
           display: none;
         }
 
-        .file-box {
-          border: 2px dashed #c9d8eb;
-          border-radius: 16px;
-          height: 160px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          color: #18243a;
-          margin-bottom: 20px;
-          transition: 0.2s;
+        .selected-file {
+          margin: 18px auto;
+          padding: 12px;
+          background: #f3f4f6;
+          border-radius: 8px;
+          max-width: 500px;
+          word-break: break-word;
         }
 
-        .file-box:hover {
-          border-color: #2161f5;
-          background: #f8fbff;
+        .primary-button,
+        .secondary-button,
+        .assistant-button {
+          border: none;
+          padding: 12px 22px;
+          border-radius: 9px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 14px;
         }
-
-        .file-symbol {
-          font-size: 40px;
-          margin-bottom: 8px;
-        }
-
-        .file-name {
-          font-size: 17px;
-          font-weight: 500;
-          max-width: 90%;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .file-hint {
-          color: #6b7d9a;
-          margin-top: 8px;
-        }
-
-        /* ================= BUTTONS ================= */
 
         .primary-button {
-          width: 100%;
-          height: 62px;
-          border: none;
-          border-radius: 14px;
-          background: #2161f5;
+          display: block;
+          margin: 20px auto 0;
+          background: #1769e0;
           color: white;
-          font-size: 20px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: 0.2s;
         }
 
         .primary-button:hover {
-          background: #174ed4;
+          background: #1257bd;
         }
 
         .primary-button:disabled {
-          background: #9bb5ef;
+          background: #9ca3af;
           cursor: not-allowed;
         }
 
-        .secondary-button {
-          width: 100%;
-          height: 62px;
-          border: 1px solid #cbd8e8;
-          border-radius: 14px;
-          background: white;
-          color: #111a30;
-          font-size: 20px;
-          font-weight: 700;
-          cursor: pointer;
-        }
-
-        .secondary-button:hover {
-          background: #f7faff;
-        }
-
-        .assistant-button {
-          width: 100%;
-          height: 62px;
-          border: none;
-          border-radius: 14px;
-          background: #9815f3;
-          color: white;
-          font-size: 20px;
-          font-weight: 700;
-          cursor: pointer;
-          margin-top: 15px;
-        }
-
-        .assistant-button:hover {
-          background: #8010d2;
-        }
-
-        /* ================= ERROR ================= */
-
-        .error {
-          margin-top: 18px;
-          padding: 16px;
-          border-radius: 14px;
-          background: #fff0f0;
-          color: #dc2626;
-          font-size: 16px;
-        }
-
-        /* ================= REPORT LIST ================= */
-
-        .reports-section {
-          margin-top: 35px;
-          background: white;
-          border: 1.5px solid #1c293d;
-          border-radius: 20px;
-          padding: 30px;
-        }
-
-        .reports-title {
-          font-size: 28px;
-          margin-top: 0;
-        }
-
-        .report-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 18px 0;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .report-item:last-child {
-          border-bottom: none;
-        }
-
-        .report-name {
-          font-weight: 600;
-          font-size: 17px;
-        }
-
-        .report-status {
-          color: #07883a;
-          background: #dcfce7;
-          padding: 7px 13px;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        /* ================= CBC RESULT ================= */
-
         .result-section {
-          margin-top: 35px;
-          background: white;
-          border: 1.5px solid #1c293d;
-          border-radius: 20px;
-          padding: 30px;
+          margin-bottom: 40px;
         }
 
         .result-header {
+          background: white;
+          padding: 24px;
+          border-radius: 16px 16px 0 0;
+          border: 1px solid #e5e7eb;
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 30px;
+          align-items: center;
         }
 
-        .result-title {
-          font-size: 30px;
+        .result-header h2 {
+          margin: 0 0 5px;
+        }
+
+        .result-header p {
           margin: 0;
+          color: #6b7280;
         }
 
-        .result-file {
-          color: #637895;
-          font-size: 17px;
-          margin-top: 8px;
-        }
-
-        .analyzed-badge {
-          background: #d9fbe5;
-          color: #07883a;
-          padding: 12px 20px;
-          border-radius: 30px;
-          font-weight: 700;
-        }
-
-        .parameters-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(3, 1fr);
-          gap: 20px;
-        }
-
-        .parameter-card {
-          border: 1.5px solid #24344c;
-          border-radius: 16px;
-          padding: 20px;
-          min-height: 165px;
-        }
-
-        .parameter-name {
-          color: #70819d;
-          font-size: 18px;
-          margin-bottom: 15px;
-        }
-
-        .parameter-value {
-          font-size: 30px;
-          font-weight: 700;
-          color: #111b31;
-        }
-
-        .parameter-unit {
-          color: #70819d;
-          margin-top: 3px;
-        }
-
-        .reference {
-          color: #70819d;
-          margin-top: 14px;
-        }
-
-        .status {
-          display: inline-block;
-          margin-top: 10px;
-          padding: 7px 13px;
+        .analysis-badge {
+          background: #dcfce7;
+          color: #166534;
+          padding: 8px 14px;
           border-radius: 20px;
-          font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
         }
 
-        .normal {
-          background: #d9fbe5;
-          color: #07883a;
-        }
-
-        .high {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .low {
-          background: #fff3cd;
-          color: #9a6700;
-        }
-
-        /* ================= SUMMARY ================= */
-
-        .summary-box {
-          margin-top: 35px;
+        .summary-card,
+        .parameters-card {
+          background: white;
           padding: 25px;
-          border-radius: 18px;
-          background: #edf5ff;
+          border: 1px solid #e5e7eb;
+          border-top: none;
         }
 
-        .summary-title {
-          font-size: 25px;
-          color: #20418b;
+        .summary-card h3,
+        .parameters-card h3 {
           margin-top: 0;
         }
 
         .summary-status {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+
+        .summary-stats {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-top: 22px;
+        }
+
+        .summary-stats div {
+          background: #f8fafc;
+          border-radius: 10px;
+          padding: 15px;
+          text-align: center;
+        }
+
+        .summary-stats strong,
+        .summary-stats span {
+          display: block;
+        }
+
+        .summary-stats strong {
+          font-size: 24px;
+          color: #1757b8;
+        }
+
+        .summary-stats span {
+          color: #6b7280;
+          font-size: 13px;
+          margin-top: 4px;
+        }
+
+        .parameters-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 15px;
+        }
+
+        .parameter-card {
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 18px;
+          background: #fafcff;
+        }
+
+        .parameter-name {
           font-weight: 700;
           margin-bottom: 10px;
         }
 
-        .summary-text {
-          font-size: 18px;
-          line-height: 1.6;
-          color: #334b72;
+        .parameter-value {
+          font-size: 24px;
+          font-weight: 700;
+          color: #111827;
         }
 
-        .summary-counts {
-          display: flex;
+        .parameter-value span {
+          font-size: 13px;
+          color: #6b7280;
+          font-weight: 500;
+        }
+
+        .parameter-reference {
+          font-size: 12px;
+          color: #6b7280;
+          margin: 8px 0;
+        }
+
+        .status {
+          display: inline-block;
+          padding: 5px 10px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .status.normal {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .status.high {
+          background: #fee2e2;
+          color: #b91c1c;
+        }
+
+        .status.low {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        .cards-section {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
           gap: 25px;
-          margin-top: 18px;
-          flex-wrap: wrap;
+          margin-top: 30px;
         }
 
-        .count {
-          padding: 10px 15px;
-          border-radius: 10px;
+        .card {
           background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 30px;
+          text-align: center;
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-icon {
+          font-size: 38px;
+          margin-bottom: 12px;
+        }
+
+        .card-title {
+          margin: 5px 0 10px;
+        }
+
+        .card-description {
+          color: #6b7280;
+          line-height: 1.6;
+          margin-bottom: 22px;
+        }
+
+        .secondary-button {
+          background: #eef2ff;
+          color: #3730a3;
+        }
+
+        .secondary-button:hover {
+          background: #e0e7ff;
+        }
+
+        .assistant-button {
+          background: #1769e0;
+          color: white;
+        }
+
+        .assistant-button:hover {
+          background: #1257bd;
+        }
+
+        .reports-section {
+          background: white;
+          margin-top: 30px;
+          border-radius: 16px;
+          padding: 25px;
+          border: 1px solid #e5e7eb;
+        }
+
+        .reports-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        .reports-title {
+          margin: 0;
+        }
+
+        .close-reports {
+          border: none;
+          background: #f3f4f6;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          cursor: pointer;
+        }
+
+        .report-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          margin-bottom: 10px;
+        }
+
+        .report-name {
           font-weight: 600;
         }
 
-        /* ================= FOOTER ================= */
-
-        .disclaimer {
-          margin-top: 40px;
-          background: #fff9e8;
-          border-radius: 15px;
-          padding: 22px;
-          color: #a54b00;
-          font-size: 17px;
+        .report-date {
+          color: #6b7280;
+          font-size: 12px;
+          margin-top: 5px;
         }
 
-        /* ================= LOADING ================= */
+        .report-status {
+          background: #fef3c7;
+          color: #92400e;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 700;
+        }
 
-        .loading-page {
+        .report-status.analyzed {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        .loading-container {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
         }
 
-        /* ================= RESPONSIVE ================= */
+        .footer {
+          text-align: center;
+          padding: 30px;
+          color: #6b7280;
+          font-size: 12px;
+        }
 
-        @media (max-width: 1100px) {
-          .dashboard-grid {
+        @media (max-width: 800px) {
+
+          .parameters-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .cards-section {
             grid-template-columns: 1fr;
           }
 
-          .parameters-grid {
-            grid-template-columns:
-              repeat(2, 1fr);
+          .summary-stats {
+            grid-template-columns: repeat(2, 1fr);
           }
+
         }
 
-        @media (max-width: 700px) {
-          .header {
-            padding: 0 15px;
-          }
+        @media (max-width: 500px) {
 
-          .welcome {
-            display: none;
+          .header {
+            padding: 15px;
           }
 
           .container {
-            padding: 30px 15px;
+            width: 94%;
           }
 
-          .page-title {
-            font-size: 30px;
-          }
-
-          .page-subtitle {
-            font-size: 17px;
-          }
-
-          .card {
-            padding: 22px;
+          .upload-card {
+            padding: 25px 15px;
           }
 
           .parameters-grid {
@@ -811,400 +1175,13 @@ export default function Home() {
           .result-header {
             flex-direction: column;
             gap: 15px;
+            align-items: flex-start;
           }
 
-          .report-item {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-          }
         }
+
       `}</style>
 
-      <div className="page">
-
-        {/* ================= HEADER ================= */}
-
-        <header className="header">
-
-          <div className="brand">
-
-            <div className="brand-icon">
-              +
-            </div>
-
-            <div>
-              <div className="brand-title">
-                MediAssist-AI
-              </div>
-
-              <div className="brand-subtitle">
-                Intelligent Health Assistant
-              </div>
-            </div>
-
-          </div>
-
-          <div className="header-right">
-
-            <span className="welcome">
-              Welcome back
-            </span>
-
-            <div className="avatar">
-              H
-            </div>
-
-            <button
-              className="logout"
-              onClick={logout}
-            >
-              Logout
-            </button>
-
-          </div>
-
-        </header>
-
-        {/* ================= MAIN ================= */}
-
-        <main className="container">
-
-          <h1 className="page-title">
-            Medical Dashboard
-          </h1>
-
-          <p className="page-subtitle">
-            Upload your medical reports and get
-            AI-powered insights.
-          </p>
-
-          {/* ================= THREE CARDS ================= */}
-
-          <section className="dashboard-grid">
-
-            {/* CBC ANALYSIS */}
-
-            <div className="card">
-
-              <div className="card-icon blood-icon">
-                🩸
-              </div>
-
-              <h2 className="card-title">
-                CBC Analysis
-              </h2>
-
-              <p className="card-description">
-                Upload a Complete Blood Count report
-                and understand your blood parameters.
-              </p>
-
-              <label className="file-label">
-
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  className="file-input"
-                  onChange={handleFileChange}
-                />
-
-                <div className="file-box">
-
-                  <div className="file-symbol">
-                    📄
-                  </div>
-
-                  {selectedFile ? (
-                    <>
-                      <div className="file-name">
-                        {selectedFile.name}
-                      </div>
-
-                      <div className="file-hint">
-                        PDF selected
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="file-name">
-                        Select medical blood report
-                      </div>
-
-                      <div className="file-hint">
-                        PDF files only
-                      </div>
-                    </>
-                  )}
-
-                </div>
-
-              </label>
-
-              <button
-                className="primary-button"
-                onClick={uploadReport}
-                disabled={loading}
-              >
-                {loading
-                  ? "Analyzing..."
-                  : "Analyze Report"}
-              </button>
-
-              {error && (
-                <div className="error">
-                  {error}
-                </div>
-              )}
-
-            </div>
-
-            {/* MY REPORTS */}
-
-            <div className="card">
-
-              <div className="card-icon reports-icon">
-                📋
-              </div>
-
-              <h2 className="card-title">
-                My Reports
-              </h2>
-
-              <p className="card-description">
-                View your previously uploaded medical
-                reports and their analysis status.
-              </p>
-
-              <button
-                className="secondary-button"
-                onClick={loadReports}
-              >
-                View Reports
-              </button>
-
-            </div>
-
-            {/* AI ASSISTANT */}
-
-            <div className="card">
-
-              <div className="card-icon bot-icon">
-                🤖
-              </div>
-
-              <h2 className="card-title">
-                AI Health Assistant
-              </h2>
-
-              <p className="card-description">
-                Ask questions about your medical reports
-                and receive easy-to-understand explanations.
-              </p>
-
-              <button
-                className="assistant-button"
-                onClick={openAssistant}
-              >
-                Open Assistant
-              </button>
-
-            </div>
-
-          </section>
-
-          {/* ================= REPORTS ================= */}
-
-          {showReports && (
-            <section className="reports-section">
-
-              <h2 className="reports-title">
-                My Reports
-              </h2>
-
-              {reports.length === 0 ? (
-                <p>
-                  No reports uploaded yet.
-                </p>
-              ) : (
-                reports.map((report) => (
-                  <div
-                    className="report-item"
-                    key={report.id}
-                  >
-
-                    <div>
-
-                      <div className="report-name">
-                        {report.file_name}
-                      </div>
-
-                      {report.uploaded_at && (
-                        <div
-                          style={{
-                            color: "#70819d",
-                            marginTop: "5px",
-                          }}
-                        >
-                          {new Date(
-                            report.uploaded_at
-                          ).toLocaleString()}
-                        </div>
-                      )}
-
-                    </div>
-
-                    <div className="report-status">
-                      {report.status}
-                    </div>
-
-                  </div>
-                ))
-              )}
-
-            </section>
-          )}
-
-          {/* ================= CBC RESULT ================= */}
-
-          {cbcResult && (
-            <section className="result-section">
-
-              <div className="result-header">
-
-                <div>
-
-                  <h2 className="result-title">
-                    CBC Analysis Result
-                  </h2>
-
-                  <div className="result-file">
-                    {cbcResult.file_name}
-                  </div>
-
-                </div>
-
-                <div className="analyzed-badge">
-                  Analyzed
-                </div>
-
-              </div>
-
-              {/* PARAMETERS */}
-
-              <div className="parameters-grid">
-
-                {Object.entries(
-                  cbcResult.analysis || {}
-                ).map(([key, parameter]) => {
-
-                  if (
-                    !parameter ||
-                    typeof parameter !== "object"
-                  ) {
-                    return null;
-                  }
-
-                  const item =
-                    parameter as CBCParameter;
-
-                  return (
-                    <div
-                      className="parameter-card"
-                      key={key}
-                    >
-
-                      <div className="parameter-name">
-                        {parameterName(key)}
-                      </div>
-
-                      <div className="parameter-value">
-                        {item.value}
-                      </div>
-
-                      <div className="parameter-unit">
-                        {item.unit}
-                      </div>
-
-                      <div className="reference">
-                        Reference: {item.reference}
-                      </div>
-
-                      <div
-                        className={getStatusClass(
-                          item.status
-                        )}
-                      >
-                        {item.status}
-                      </div>
-
-                    </div>
-                  );
-                })}
-
-              </div>
-
-              {/* SUMMARY */}
-
-              {cbcResult.summary && (
-                <div className="summary-box">
-
-                  <h3 className="summary-title">
-                    Summary
-                  </h3>
-
-                  <div className="summary-status">
-                    Overall Status:{" "}
-                    {cbcResult.summary.overall_status}
-                  </div>
-
-                  <div className="summary-text">
-                    {cbcResult.summary.summary}
-                  </div>
-
-                  <div className="summary-counts">
-
-                    <div className="count">
-                      Normal:{" "}
-                      {cbcResult.summary.normal_count}
-                    </div>
-
-                    <div className="count">
-                      High:{" "}
-                      {cbcResult.summary.high_count}
-                    </div>
-
-                    <div className="count">
-                      Low:{" "}
-                      {cbcResult.summary.low_count}
-                    </div>
-
-                    <div className="count">
-                      Total:{" "}
-                      {cbcResult.summary.total_parameters}
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-            </section>
-          )}
-
-          {/* ================= DISCLAIMER ================= */}
-
-          <div className="disclaimer">
-            <strong>Important:</strong>{" "}
-            MediAssist-AI provides informational
-            assistance and is not a substitute for
-            professional medical advice, diagnosis,
-            or treatment.
-          </div>
-
-        </main>
-
-      </div>
-    </>
+    </main>
   );
 }

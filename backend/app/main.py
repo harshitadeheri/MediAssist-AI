@@ -7,7 +7,6 @@ from app.api.v1.reports import router as reports_router
 from app.api.v1.cbc import router as cbc_router
 from app.api.v1.chatbot import router as chatbot_router
 
-
 app = FastAPI(
     title="MediAssist AI",
     version="1.0.0",
