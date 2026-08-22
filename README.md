@@ -1,4 +1,4 @@
-k# 🏥 MediAssist AI
+# 🏥 MediAssist AI
 
 > An AI-powered healthcare assistant for analyzing medical reports, understanding blood test results, and providing intelligent health insights.
 
