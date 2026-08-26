@@ -6,6 +6,15 @@ from app.api.v1.users import router as users_router
 from app.api.v1.reports import router as reports_router
 from app.api.v1.cbc import router as cbc_router
 from app.api.v1.chatbot import router as chatbot_router
+from app.database.database import Base, engine
+
+# Import models so SQLAlchemy knows about all tables
+from app.models.user import User
+from app.models.report import Report
+from app.models.cbc_analysis import CBCAnalysis
+
+# Create database tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="MediAssist AI",
