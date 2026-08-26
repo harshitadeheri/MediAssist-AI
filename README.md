@@ -1,256 +1,356 @@
 # 🏥 MediAssist AI
 
-> An AI-powered healthcare assistant for analyzing medical reports, understanding blood test results, and providing intelligent health insights.
+> An AI-powered healthcare assistant for analyzing medical reports, extracting
+> laboratory information, providing health explanations, and assisting users
+> through an intelligent medical chatbot.
 
-## 📌 Overview
+MediAssist AI is a full-stack healthcare application designed to help users
+understand their medical reports and laboratory results through AI-assisted
+analysis.
 
-MediAssist AI is a full-stack AI-powered healthcare application designed to help users better understand their medical reports and health information.
+The system combines a modern web frontend, a FastAPI backend, PostgreSQL
+database, OCR/PDF processing, and AI-based healthcare assistance in a single
+platform.
 
-The application combines **OCR, Machine Learning, Deep Learning, and Generative AI** to analyze medical documents and provide easy-to-understand explanations.
+---
 
-It provides a centralized platform where users can upload medical reports, extract relevant information, analyze blood reports, and interact with an AI-powered health assistant.
+## 🚀 Live Backend
+
+**Backend API:**  
+https://mediassist-backend-l8jj.onrender.com
+
+**API Documentation (Swagger):**  
+https://mediassist-backend-l8jj.onrender.com/docs
+
+> The backend is deployed on Render. The frontend deployment is currently
+> under development.
 
 ---
 
 ## ✨ Features
 
-- 📄 **Medical Report Upload**
-  - Upload medical reports in PDF format.
+### 🔐 User Authentication
 
-- 🔬 **CBC Report Analysis**
-  - Extract and analyze important Complete Blood Count (CBC) parameters.
+- User registration
+- User login
+- JWT-based authentication
+- Protected API endpoints
+- Secure password hashing
 
-- 📝 **OCR-based Medical Data Extraction**
-  - Extract text and medical information from uploaded reports using OCR.
+### 🩸 CBC Report Analysis
 
-- 🩸 **Blood Smear Image Analysis**
-  - Analyze blood smear images using Deep Learning.
+- Upload CBC/medical reports
+- Extract relevant laboratory values
+- Analyze CBC parameters
+- Generate understandable health-related explanations
+- Store report analysis results
 
-- 🤖 **AI Health Assistant**
-  - Ask health-related questions and receive AI-generated explanations.
+### 📄 Medical Report Processing
 
-- 🧠 **Disease Risk Prediction**
-  - Predict potential disease risks based on available medical information.
+- PDF report upload
+- PDF text extraction
+- Medical report processing
+- Structured storage of report information
 
-- 📊 **Medical Report Explanation**
-  - Convert complex medical terminology and report values into simpler explanations.
+### 🔎 OCR Support
 
-- 📑 **PDF Report Generation**
-  - Generate structured PDF reports from the analyzed information.
+- Extract information from medical reports
+- Process medical report data for further analysis
+
+### 🤖 AI Health Assistant
+
+- AI-powered healthcare chatbot
+- Conversational interaction
+- Health-related explanations
+- Context-aware assistance
+
+### 🧠 AI / Deep Learning
+
+- AI-assisted medical analysis
+- Disease risk/prediction functionality
+- Deep-learning based components for healthcare analysis
+
+### 📊 Report Management
+
+- Store user reports
+- Retrieve report information
+- Associate reports with authenticated users
 
 ---
 
 ## 🏗️ System Architecture
 
 ```text
-                     ┌─────────────────────┐
-                     │      User           │
-                     └──────────┬──────────┘
-                                │
-                                ▼
-                     ┌─────────────────────┐
-                     │   Next.js Frontend  │
-                     │   TypeScript        │
-                     └──────────┬──────────┘
-                                │
-                         REST API Requests
-                                │
-                                ▼
-                     ┌─────────────────────┐
-                     │   FastAPI Backend   │
-                     │      Python         │
-                     └──────────┬──────────┘
-                                │
-             ┌──────────────────┼──────────────────┐
-             │                  │                  │
-             ▼                  ▼                  ▼
-       ┌───────────┐      ┌───────────┐     ┌─────────────┐
-       │    OCR    │      │    AI/ML   │     │ PostgreSQL  │
-       │ Processing│      │  Models    │     │  Database   │
-       └───────────┘      └───────────┘     └─────────────┘
-             │                  │
-             └──────────────────┼──────────────────┐
-                                ▼                  │
-                         ┌──────────────┐          │
-                         │ AI Health    │◄─────────┘
-                         │ Assistant    │
-                         └──────────────┘
+                    ┌─────────────────────┐
+                    │      Frontend       │
+                    │      Next.js        │
+                    └──────────┬──────────┘
+                               │
+                               │ REST API
+                               ▼
+                    ┌─────────────────────┐
+                    │       FastAPI       │
+                    │       Backend       │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+       ┌────────────┐   ┌────────────┐   ┌─────────────┐
+       │ PostgreSQL │   │ AI / ML    │   │ PDF / OCR   │
+       │  Database  │   │ Services   │   │ Processing  │
+       └────────────┘   └────────────┘   └─────────────┘
 🛠️ Tech Stack
-Frontend
-Next.js
-TypeScript
-React
-Tailwind CSS
-Backend
-Python
-FastAPI
-Pydantic
-Uvicorn
-Database
-PostgreSQL
-SQLAlchemy
-AI / Machine Learning
-PyTorch
-Machine Learning models
-Deep Learning
-Generative AI
-OCR & Document Processing
-EasyOCR / PaddleOCR
-PyPDF
-Authentication & Security
-JWT Authentication
-Password Hashing
-Environment-based configuration
-Deployment
-GitHub
-Render
-
-📂 Project Structure
-
+Layer	Technology
+Frontend	Next.js, TypeScript
+Backend	FastAPI, Python
+API Server	Uvicorn
+Database	PostgreSQL
+ORM	SQLAlchemy
+Authentication	JWT, Passlib, bcrypt
+Validation	Pydantic
+PDF Processing	PyPDF
+OCR	EasyOCR / PaddleOCR
+AI / ML	PyTorch
+Deployment	Render
+📁 Project Structure
 MediAssist-AI/
 │
 ├── backend/
 │   ├── app/
 │   │   ├── api/
 │   │   │   └── v1/
+│   │   │       ├── auth.py
+│   │   │       ├── users.py
+│   │   │       ├── reports.py
+│   │   │       ├── cbc.py
+│   │   │       ├── chatbot.py
+│   │   │       └── prediction.py
+│   │   │
 │   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── oauth2.py
+│   │   │   └── security.py
+│   │   │
 │   │   ├── database/
+│   │   │   ├── database.py
+│   │   │   ├── dependencies.py
+│   │   │   └── create_tables.py
+│   │   │
 │   │   ├── models/
+│   │   │   ├── user.py
+│   │   │   ├── report.py
+│   │   │   └── cbc_analysis.py
+│   │   │
+│   │   ├── repositories/
 │   │   ├── schemas/
 │   │   ├── services/
 │   │   └── main.py
 │   │
-│   ├── requirements.txt
-│   ├── .env
-│   └── venv/
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── app/
+│   ├── public/
+│   ├── package.json
+│   └── next.config.ts
 │
 ├── docs/
 │
-├── README.md
-├── requirements.txt
-└── .gitignore
+├── .gitignore
+└── README.md
+🔌 API Endpoints
 
+The backend exposes REST APIs using FastAPI.
 
-⚙️ Installation & Setup
+Authentication
+POST /auth/register
+POST /auth/login
+Users
+GET /users/me
+Medical Reports
+POST /reports/upload
+
+Additional CBC, chatbot, and prediction functionality is exposed through
+the corresponding API modules.
+
+Interactive API documentation is available at:
+
+https://mediassist-backend-l8jj.onrender.com/docs
+
+⚙️ Local Setup
 1. Clone the repository
 git clone https://github.com/harshitadeheri/MediAssist-AI.git
 cd MediAssist-AI
-2. Create a virtual environment
+2. Backend Setup
 cd backend
 
 python -m venv venv
-
-Activate the environment:
-
-macOS / Linux
 source venv/bin/activate
-Windows
+
+For Windows:
+
 venv\Scripts\activate
-3. Install dependencies
+
+Install dependencies:
+
 pip install -r requirements.txt
-4. Configure environment variables
+3. Configure Environment Variables
 
 Create a .env file inside the backend directory.
 
-DATABASE_URL=your_database_url
 APP_NAME=MediAssist AI
 APP_VERSION=1.0.0
-DEBUG=False
+DEBUG=True
+
+DATABASE_URL=your_postgresql_database_url
+
 SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-Never commit your .env file or expose secret keys publicly.
+Do not commit .env files or API keys to GitHub.
 
-5. Run the backend
-uvicorn app.main:app --reload
+4. Run the Backend
+uvicorn app.main:app --reload --port 8000
 
 The API will be available at:
 
-http://127.0.0.1:8000
+http://localhost:8000
 
-Swagger API documentation:
+Swagger documentation:
 
-http://127.0.0.1:8000/docs
-🔐 Authentication
+http://localhost:8000/docs
+5. Run the Frontend
 
-MediAssist AI uses JWT-based authentication.
+Open another terminal:
 
-The authentication flow includes:
+cd frontend
+npm install
+npm run dev
 
-User registration
+The frontend will be available at:
+
+http://localhost:3000
+🔄 Application Flow
+User
+  │
+  ▼
+Next.js Frontend
+  │
+  │ REST API
+  ▼
+FastAPI Backend
+  │
+  ├── Authentication
+  │       │
+  │       ▼
+  │    JWT Token
+  │
+  ├── Medical Report Upload
+  │       │
+  │       ▼
+  │    PDF / OCR Processing
+  │
+  ├── CBC Analysis
+  │       │
+  │       ▼
+  │    AI / ML Analysis
+  │
+  ├── Chatbot
+  │       │
+  │       ▼
+  │    Health Explanation
+  │
+  └── PostgreSQL
+          │
+          ▼
+      Store Results
+🔒 Security
+
+The application includes:
+
+JWT-based authentication
 Password hashing
-User login
-JWT access token generation
 Protected API endpoints
-Token expiration
-📊 Medical Report Processing
+Environment-based configuration
+CORS configuration
+Separation of frontend and backend
+Secrets stored outside the source code
+☁️ Deployment
 
-The medical report processing pipeline follows these steps:
-
-Upload Medical Report
-        ↓
-PDF / Image Processing
-        ↓
-OCR Text Extraction
-        ↓
-Medical Data Extraction
-        ↓
-Report Analysis
-        ↓
-AI-based Explanation
-        ↓
-User-friendly Results
-🧠 AI Pipeline
-
-The AI components are designed to support:
-
-Medical report interpretation
-Blood report analysis
-Disease risk prediction
-Blood smear image classification
-AI-generated health explanations
-
-The system is designed as a decision-support and educational tool and is not intended to replace professional medical diagnosis.
-
-🚀 Deployment
-
-The backend is configured for deployment using Render.
-
-The deployment process is:
+The FastAPI backend is deployed using Render.
 
 GitHub Repository
-       ↓
-Render
-       ↓
-FastAPI Application
-       ↓
-PostgreSQL Database
+       │
+       ▼
+    Render
+       │
+       ▼
+ FastAPI + Uvicorn
+       │
+       ▼
+ PostgreSQL
 
-Every update pushed to the main branch can trigger a new deployment.
+Backend:
 
-🔮 Future Enhancements
-Doctor recommendation system
-More disease prediction models
-Advanced medical image classification
-Personalized health dashboard
-Medical history tracking
-Improved AI conversational capabilities
-More comprehensive report analysis
-Mobile application
-Cloud-based ML inference
+https://mediassist-backend-l8jj.onrender.com
+
+API documentation:
+
+https://mediassist-backend-l8jj.onrender.com/docs
+
+🧪 Testing
+
+The backend can be tested through the automatically generated FastAPI
+Swagger documentation.
+
+Main testing flow:
+
+Register
+   ↓
+Login
+   ↓
+Obtain JWT token
+   ↓
+Authorize
+   ↓
+Access protected endpoints
+   ↓
+Upload medical report
+   ↓
+Analyze report
+   ↓
+Retrieve results
+⚠️ Medical Disclaimer
+
+MediAssist AI is an educational and assistive software project.
+
+It is not a replacement for a qualified healthcare professional and
+should not be used as the sole basis for medical diagnosis or treatment.
+
+Users should consult qualified healthcare professionals for medical advice,
+diagnosis, and treatment decisions.
+
 👩‍💻 Author
 
 Harshita Deheri
 
-B.Tech Computer Science & Engineering
-National Institute of Technology, Rourkela
+Computer Science Engineering
 
 GitHub:
 https://github.com/harshitadeheri
 
-⚠️ Disclaimer
-
-MediAssist AI is developed for educational and research purposes.
-
-The information generated by the system should not be considered a medical diagnosis or a substitute for consultation with a qualified healthcare professional.
+⭐ Project Highlights
+Full-stack healthcare application
+RESTful API architecture
+FastAPI backend
+PostgreSQL database
+JWT authentication
+Medical PDF processing
+OCR integration
+CBC analysis
+AI-powered chatbot
+AI/ML-assisted healthcare analysis
+Cloud deployment
+Interactive Swagger API documentation
